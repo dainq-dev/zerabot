@@ -1,0 +1,40 @@
+import type { McpServerConfig } from '@zerobot/shared'
+
+export const MOCK_MCP_SERVERS: McpServerConfig[] = [
+  {
+    id: 'mcp-git',
+    name: 'Git MCP',
+    description: 'Git operations via MCP stdio',
+    transport: 'stdio',
+    command: 'uvx',
+    args: ['mcp-server-git', '--repository', '/workspace'],
+    env: {},
+    assignedAgents: ['agent-alpha'],
+    autoConnect: true,
+    reconnectMs: 3000,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000,
+    status: 'connected',
+    tools: [
+      { name: 'git_status', description: 'Get git status', inputSchema: {} },
+      { name: 'git_diff', description: 'Get git diff', inputSchema: {} },
+      { name: 'git_commit', description: 'Create a commit', inputSchema: { message: { type: 'string' } } },
+    ],
+    toolCount: 3,
+  },
+  {
+    id: 'mcp-browser',
+    name: 'Browser MCP',
+    description: 'Browser automation via HTTP SSE',
+    transport: 'http',
+    endpoint: 'http://localhost:8931/sse',
+    assignedAgents: ['agent-alpha', 'agent-beta'],
+    autoConnect: true,
+    reconnectMs: 5000,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000,
+    status: 'disconnected',
+    tools: [],
+    toolCount: 0,
+  },
+]

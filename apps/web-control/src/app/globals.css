@@ -1,0 +1,263 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── ZeraBot Design System — Slate / Mid-Dark ───────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+
+  /* ZeraBot brand colors */
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-green: var(--green);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-grid: var(--grid);
+}
+
+/*
+ * ZeraBot "Slate" — comfortable mid-dark theme
+ * Background scale:  sidebar(0.13) < bg(0.17) < card(0.21) < elevated(0.25) < popover(0.27)
+ * Inspired by: Vercel dashboard, Linear dark, GitHub dark dimmed
+ */
+:root, .dark {
+  /* ── Base ── */
+  --background: oklch(0.17 0.008 245);
+  --foreground: oklch(0.93 0.008 250);
+
+  /* ── Cards & Popover ── */
+  --card: oklch(0.21 0.009 245);
+  --card-foreground: oklch(0.93 0.008 250);
+  --popover: oklch(0.27 0.012 245);
+  --popover-foreground: oklch(0.93 0.008 250);
+
+  /* ── Primary — cyan ── */
+  --primary: oklch(0.72 0.17 192);
+  --primary-foreground: oklch(0.10 0.02 220);
+
+  /* ── Secondary ── */
+  --secondary: oklch(0.25 0.012 245);
+  --secondary-foreground: oklch(0.80 0.025 250);
+
+  /* ── Muted ── */
+  --muted: oklch(0.23 0.009 245);
+  --muted-foreground: oklch(0.58 0.022 245);
+
+  /* ── Accent ── */
+  --accent: oklch(0.26 0.018 215);
+  --accent-foreground: oklch(0.72 0.17 192);
+
+  /* ── Destructive ── */
+  --destructive: oklch(0.60 0.22 25);
+
+  /* ── Border / Input / Ring ── */
+  --border: oklch(0.36 0.018 240 / 70%);
+  --input: oklch(0.24 0.013 240);
+  --ring: oklch(0.72 0.17 192 / 55%);
+
+  /* ── Charts ── */
+  --chart-1: oklch(0.72 0.17 192);   /* cyan */
+  --chart-2: oklch(0.68 0.20 260);   /* blue */
+  --chart-3: oklch(0.80 0.18 88);    /* amber */
+  --chart-4: oklch(0.70 0.20 305);   /* purple */
+  --chart-5: oklch(0.60 0.22 25);    /* red */
+
+  /* ── Radius ── */
+  --radius: 0.5rem;
+
+  /* ── Sidebar — slightly darker than bg for depth ── */
+  --sidebar: oklch(0.13 0.007 248);
+  --sidebar-foreground: oklch(0.75 0.03 250);
+  --sidebar-primary: oklch(0.72 0.17 192);
+  --sidebar-primary-foreground: oklch(0.10 0.02 220);
+  --sidebar-accent: oklch(0.22 0.015 240);
+  --sidebar-accent-foreground: oklch(0.88 0.04 195);
+  --sidebar-border: oklch(0.26 0.015 240 / 60%);
+  --sidebar-ring: oklch(0.72 0.17 192 / 50%);
+
+  /* ── ZeraBot brand ── */
+  --cyan: oklch(0.72 0.17 192);
+  --cyan-dim: oklch(0.52 0.10 192);
+  --green: oklch(0.72 0.19 148);
+  --amber: oklch(0.82 0.19 82);
+  --red: oklch(0.60 0.22 25);
+  --surface: oklch(0.21 0.009 245);
+  --surface-2: oklch(0.25 0.012 245);
+  --grid: oklch(0.28 0.012 240 / 35%);
+}
+
+/* ── Light mode ── */
+.light {
+  --background: oklch(0.97 0.005 240);
+  --foreground: oklch(0.15 0.02 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 240);
+  --primary: oklch(0.44 0.18 192);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.93 0.01 240);
+  --secondary-foreground: oklch(0.20 0.02 240);
+  --muted: oklch(0.93 0.01 240);
+  --muted-foreground: oklch(0.50 0.025 240);
+  --accent: oklch(0.90 0.03 192);
+  --accent-foreground: oklch(0.25 0.12 192);
+  --destructive: oklch(0.56 0.22 25);
+  --border: oklch(0.85 0.015 240);
+  --input: oklch(0.88 0.01 240);
+  --ring: oklch(0.44 0.18 192 / 50%);
+  --sidebar: oklch(0.94 0.01 240);
+  --sidebar-foreground: oklch(0.20 0.02 240);
+  --sidebar-border: oklch(0.85 0.015 240);
+  --surface: oklch(0.96 0.005 240);
+  --surface-2: oklch(0.92 0.008 240);
+  --grid: oklch(0.78 0.015 240 / 40%);
+  --cyan: oklch(0.44 0.18 192);
+  --cyan-dim: oklch(0.60 0.12 192);
+  --green: oklch(0.52 0.18 148);
+  --amber: oklch(0.62 0.18 82);
+  --red: oklch(0.56 0.22 25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+  html {
+    @apply font-mono;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-mono tracking-tight;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: oklch(0.36 0.018 240 / 55%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.52 0.12 192 / 80%);
+}
+
+/* ── Grid background ── */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Glow effects ── */
+.glow-cyan {
+  box-shadow: 0 0 24px -6px oklch(0.72 0.17 192 / 45%);
+}
+.glow-green {
+  box-shadow: 0 0 24px -6px oklch(0.72 0.19 148 / 45%);
+}
+.text-glow-cyan {
+  text-shadow: 0 0 18px oklch(0.72 0.17 192 / 55%);
+}
+
+/* ── Terminal cursor blink ── */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: cursor-blink 1.2s step-end infinite;
+}
+
+/* ── Pulse dot ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Scan line overlay ── */
+.scan-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    oklch(0 0 0 / 2%) 2px,
+    oklch(0 0 0 / 2%) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Status badge colors ── */
+.status-running  { color: oklch(0.72 0.19 148); }
+.status-paused   { color: oklch(0.82 0.19 82); }
+.status-stopped  { color: oklch(0.58 0.022 245); }
+.status-error    { color: oklch(0.60 0.22 25); }
+.status-starting { color: oklch(0.72 0.17 192); }
+
+/* ── Card hover ── */
+.card-hover {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.card-hover:hover {
+  border-color: oklch(0.72 0.17 192 / 45%);
+  box-shadow: 0 0 0 1px oklch(0.72 0.17 192 / 18%), 0 4px 16px -4px oklch(0 0 0 / 35%);
+}
+
+/* ── Typewriter ── */
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}

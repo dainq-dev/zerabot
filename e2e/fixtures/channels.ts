@@ -1,0 +1,61 @@
+import type { Channel } from '@zerobot/shared'
+
+export const MOCK_CHANNELS: Channel[] = [
+  {
+    id: 'telegram',
+    name: 'Telegram',
+    config: { botToken: '', dmPolicy: 'allowlist', allowFrom: [] },
+    routing: [
+      { eventType: 'agent.alerts', enabled: true },
+      { eventType: 'cron.notifications', enabled: false },
+    ],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+  {
+    id: 'discord',
+    name: 'Discord',
+    config: { token: '', guildId: '', defaultChannel: '' },
+    routing: [{ eventType: 'agent.alerts', enabled: false }],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    config: { botToken: '', signingSecret: '', defaultChannel: '' },
+    routing: [],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+  {
+    id: 'mattermost',
+    name: 'Mattermost',
+    config: { serverUrl: '', botToken: '', defaultChannelId: '', teamId: '', tlsVerify: true },
+    routing: [],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+  {
+    id: 'webhook',
+    name: 'Webhook',
+    config: { url: '' },
+    routing: [],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+  {
+    id: 'email',
+    name: 'Email',
+    config: { smtpHost: '', smtpPort: 587, smtpUser: '', smtpPass: '', from: '', to: [] },
+    routing: [],
+    enabled: false,
+    status: 'disconnected',
+    updatedAt: 1700000000000,
+  },
+]

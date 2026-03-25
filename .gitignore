@@ -1,0 +1,65 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnp
+.pnp.*
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+.next/
+out/
+/build
+/coverage
+
+# ── Environment variables (NEVER commit) ──────────────────────────────────────
+.env
+.env.local
+.env.*.local
+# NOTE: .env.example is intentionally tracked — it documents required vars
+
+# ── Secrets & runtime state ───────────────────────────────────────────────────
+*.pem
+*.key
+*.secret
+apps/api-bridge/.config/*.toml
+apps/api-bridge/.config/.secret_key
+apps/api-bridge/.config/workspace/
+apps/api-bridge/.config/daemon_state.json
+
+# ── Database files ────────────────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ── OpenClaw / ZeraBot runtime (machine-local, contain secrets) ───────────────
+.openclaw-state/
+# Note: ~/.zerabot/ and ~/.openclaw/ are outside repo — no gitignore needed
+
+# ── E2E test artifacts (generated output, not source) ────────────────────────
+e2e/results/
+
+# ── TypeScript build cache ────────────────────────────────────────────────────
+*.tsbuildinfo
+
+# ── OS & editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── Vercel ────────────────────────────────────────────────────────────────────
+.vercel
