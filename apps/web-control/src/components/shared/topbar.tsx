@@ -47,14 +47,7 @@ export function Topbar() {
         </span>
       </div>
       <div className="flex items-center justify-end gap-8">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Tìm kiếm..."
-            className="h-10 pl-8 text-xs min-w-100 bg-muted border-white/30 focus-visible:ring-primary/50 placeholder:text-muted-foreground"
-          />
-        </div>
-        <div className="hidden lg:block text-md text-muted-foreground font-mono tabular-nums">
+        <div className="text-md text-muted-foreground font-mono tabular-nums">
           <ClockDisplay />
         </div>
       </div>
