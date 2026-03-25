@@ -52,24 +52,22 @@ export function PipelineCard({ pipeline, onEdit, onRun, onDelete }: PipelineCard
   return (
     <Card className="bg-card border border-border card-hover flex flex-col overflow-hidden">
       {/* Status accent bar */}
-      <div className={cn("h-0.5 shrink-0", status.bar)} />
-
       <div className="p-4 flex flex-col flex-1 gap-3">
         {/* Name + status badge */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-base leading-tight truncate">{pipeline.name}</div>
+            <div className="font-bold text-lg uppercase leading-tight truncate">{pipeline.name}</div>
             {pipeline.description ? (
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+              <p className="text-md text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                 {pipeline.description}
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground/40 mt-1 italic">Chưa có mô tả</p>
+              <p className="text-sm text-muted-foreground/40 mt-1 italic">Chưa có mô tả</p>
             )}
           </div>
           <Badge
             variant="outline"
-            className={cn("shrink-0 text-[10px] font-mono tracking-wider", status.cls)}
+            className={cn("shrink-0 text-[15px] font-mono tracking-wider p-2", status.cls)}
           >
             {status.label}
           </Badge>
@@ -77,66 +75,66 @@ export function PipelineCard({ pipeline, onEdit, onRun, onDelete }: PipelineCard
 
         {/* Trigger info */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <TriggerIcon className={cn("w-3.5 h-3.5 shrink-0", trigger.color)} />
-          <span className={cn("text-xs font-medium", trigger.color)}>{trigger.label}</span>
+          <TriggerIcon className={cn("w-5 h-5 shrink-0", trigger.color)} />
+          <span className={cn("text-[17px] font-medium", trigger.color)}>{trigger.label}</span>
           {pipeline.trigger.schedule && (
-            <code className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+            <code className="text-[14px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
               {pipeline.trigger.schedule}
             </code>
           )}
           {pipeline.trigger.channelId && (
-            <span className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">
+            <span className="text-[16px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">
               {pipeline.trigger.channelId}
             </span>
           )}
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-4 text-md text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Layers className="w-3 h-3" />
+            <Layers className="w-5 h-5" />
             {pipeline.nodes.length} nodes
           </span>
           {(pipeline.runCount ?? 0) > 0 && (
             <span className="flex items-center gap-1">
-              <GitFork className="w-3 h-3" />
+              <GitFork className="w-5 h-5" />
               {pipeline.runCount} lần chạy
             </span>
           )}
         </div>
 
         {/* Last run */}
-        <div className="text-[11px] text-muted-foreground/50 font-mono">
+        <div className="text-[15px] text-muted-foreground/50 font-mono">
           Lần cuối chạy: {fmtDate(pipeline.lastRunAt)}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-2 border-t border-border/40 mt-auto">
           <Button
-            size="sm"
-            className="flex-1 h-8 text-xs gap-1.5 uppercase tracking-wide"
+            size="lg"
+            className="flex-1 h-8 text-lg gap-1.5 uppercase tracking-wide"
             onClick={onEdit}
           >
-            <Edit2 className="w-3 h-3" />
+            <Edit2 className="w-5 h-5" />
             Edit
           </Button>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             className="h-8 w-8 p-0 text-green-400 border-green-500/30 hover:bg-green-500/10 hover:text-green-300"
             title="Chạy ngay"
             onClick={onRun}
           >
-            <Play className="w-3.5 h-3.5" />
+            <Play className="w-6 h-6" />
           </Button>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             className="h-8 w-8 p-0 text-red-400 border-red-500/30 hover:bg-red-500/10 hover:text-red-300"
             title="Xóa pipeline"
             onClick={onDelete}
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-6 h-6" />
           </Button>
         </div>
       </div>

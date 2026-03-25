@@ -72,13 +72,25 @@ function OutputPanel({
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Live WebSocket stream (catches real-time events if WS is connected before task finishes)
   const { events: streamEvents, connected } = useEventStream(500)
-  const liveFiltered = streamEvents
-    .filter(e => e.agentId === agentId && e.ts >= since && RELEVANT_TYPES.has(e.type))
+
+  // Delta chunks: streaming text fragments (payload.delta === true) — never persisted to DB
+  const deltaChunks = streamEvents.filter(
+    e => e.agentId === agentId && e.ts >= since &&
+      e.type === "session.message" && (e.payload as Record<string, unknown>).delta === true
+  )
+  const streamingText = deltaChunks
+    .map(e => String((e.payload as Record<string, unknown>).content ?? ""))
+    .join("")
+
+  // liveFiltered: non-delta WS events only
+  const liveFiltered = streamEvents.filter(
+    e => e.agentId === agentId && e.ts >= since &&
+      RELEVANT_TYPES.has(e.type) &&
+      !(e.type === "session.message" && (e.payload as Record<string, unknown>).delta === true)
+  )
 
   // Always poll DB — covers the common case where broadcast fires before this panel mounts.
-  // Refetch every 2s while task is recent (<2min), then stop.
   const isRecent = Date.now() - since < RECENT_MS
   const { data: dbEvents = [] } = useQuery({
     queryKey: ["task-events", agentId, since],
@@ -96,7 +108,13 @@ function OutputPanel({
     .filter(e => { if (seenIds.has(e.id)) return false; seenIds.add(e.id); return true })
     .sort((a, b) => a.ts - b.ts)
 
-  const isLoading = isRecent && events.length === 0
+  // Show streaming bubble only while chunks are arriving and final message hasn't landed yet
+  const hasFinalAssistant = events.some(
+    e => e.type === "session.message" &&
+      (e.payload as Record<string, unknown>).role === "assistant"
+  )
+  const isStreaming = streamingText.length > 0 && !hasFinalAssistant
+  const isLoading = isRecent && events.length === 0 && !isStreaming
 
   // Compute step numbers for tool.call events
   let stepNum = 0
@@ -110,7 +128,7 @@ function OutputPanel({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [events.length])
+  }, [events.length, streamingText.length])
 
   return (
     <div className="bg-card border border-primary/30 rounded-lg overflow-hidden flex flex-col" style={{ minHeight: 280, maxHeight: 520 }}>
@@ -121,6 +139,11 @@ function OutputPanel({
         <span className="text-sm font-semibold tracking-wide text-primary">LIVE OUTPUT</span>
         <span className="text-xs text-muted-foreground">— {agentName}</span>
         <Badge variant="outline" className="ml-1 text-[9px] h-4 px-1.5">{events.length} events</Badge>
+        {isStreaming && (
+          <Badge variant="outline" className="text-[9px] h-4 px-1.5 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 gap-1">
+            <Loader2 className="w-2 h-2 animate-spin" /> streaming
+          </Badge>
+        )}
         {stepNum > 0 && (
           <Badge variant="outline" className="text-[9px] h-4 px-1.5 bg-amber-500/10 text-amber-400 border-amber-500/20">
             {stepNum} steps
@@ -139,13 +162,25 @@ function OutputPanel({
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>Waiting for agent response…</span>
           </div>
-        ) : events.length === 0 ? (
+        ) : events.length === 0 && !isStreaming ? (
           <div className="flex flex-col items-center justify-center h-24 text-muted-foreground/40 gap-1.5">
             <Terminal className="w-4 h-4" />
             <span>No events recorded for this task</span>
           </div>
         ) : (
-          events.map(e => <OutputLine key={e.id} event={e} step={stepMap.get(e.id)} />)
+          <>
+            {events.map(e => <OutputLine key={e.id} event={e} step={stepMap.get(e.id)} />)}
+            {/* Live streaming bubble — replaces when final message arrives */}
+            {isStreaming && (
+              <div className="flex gap-2">
+                <span className="text-muted-foreground/40 shrink-0 w-14 tabular-nums">LIVE</span>
+                <span className="text-cyan-400 shrink-0 font-bold"> BOT</span>
+                <div className="text-foreground/90 prose prose-invert prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                  <Markdown>{streamingText}</Markdown>
+                </div>
+              </div>
+            )}
+          </>
         )}
         <div ref={bottomRef} />
       </div>
@@ -218,20 +253,22 @@ function OutputLine({ event: e, step }: { event: ZerabotEvent; step?: number }) 
 
   if (e.type === "tool.result") {
     const ok = p.error == null
+    const noResults = p.noResults === true
     const output = p.output ?? p.result ?? p.content
     const latency = p.latencyMs as number | undefined
     const hasOutput = output != null && String(output).length > 0
+    const colorCls = !ok ? "text-red-400/70" : noResults ? "text-amber-400/70" : "text-green-400/60"
     return (
       <div className="space-y-0.5">
         <div
-          className={cn("flex gap-2", ok ? "text-green-400/60" : "text-red-400/70", hasOutput && "cursor-pointer hover:opacity-80")}
+          className={cn("flex gap-2", colorCls, hasOutput && "cursor-pointer hover:opacity-80")}
           onClick={() => hasOutput && setExpanded(!expanded)}
         >
           <span className="text-muted-foreground/40 shrink-0 w-14 tabular-nums">{fmtTimeShort(e.ts)}</span>
           <span className="shrink-0 w-8 text-right" />
-          <span className="shrink-0">{ok ? "✓" : "✗"}</span>
+          <span className="shrink-0">{ok ? (noResults ? "⚠" : "✓") : "✗"}</span>
           <span className="truncate">
-            {ok ? "tool ok" : String(p.error)}
+            {!ok ? String(p.error) : noResults ? "no results" : "tool ok"}
             {latency != null && <span className="text-muted-foreground/30 ml-1">({latency}ms)</span>}
             {hasOutput && (
               <span className="text-muted-foreground/40 ml-1 text-[10px]">
@@ -394,7 +431,7 @@ export default function TasksPage() {
             </SelectContent>
           </Select>
 
-          <Select value={targetId} onValueChange={setTargetId}>
+          <Select value={targetId} onValueChange={(v) => { if (v) setTargetId(v) }}>
             <SelectTrigger className="flex-1 h-9 text-sm">
               <SelectValue placeholder={targetType === "agent" ? "Select a running agent…" : "Select a pipeline…"} />
             </SelectTrigger>
@@ -414,6 +451,7 @@ export default function TasksPage() {
 
         {/* Prompt */}
         <Textarea
+          data-testid="task-prompt-textarea"
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -428,6 +466,7 @@ export default function TasksPage() {
             )}
           </p>
           <Button
+            data-testid="task-send-btn"
             size="sm"
             className="gap-2 uppercase tracking-wide"
             onClick={() => runMut.mutate()}
@@ -470,7 +509,7 @@ export default function TasksPage() {
             <p className="text-sm text-muted-foreground">No tasks dispatched yet</p>
           </div>
         ) : (
-          <div className="border border-border rounded-md overflow-hidden">
+          <div data-testid="task-runs-table" className="border border-border rounded-md overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">

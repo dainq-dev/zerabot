@@ -162,11 +162,11 @@ export default function FlowPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl uppercase font-bold tracking-wide flex items-center gap-2">
+          <h1 className="text-2xl uppercase font-bold tracking-wide flex items-center gap-2">
             <GitFork className="w-5 h-5 text-primary" />
             Flow Builder
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-md text-muted-foreground mt-0.5">
             Tự động hóa công việc bằng cách kết nối các agents thành pipeline
           </p>
         </div>
@@ -174,19 +174,19 @@ export default function FlowPage() {
           <Button
             variant="destructive"
             size="lg"
-            className="h-8 gap-2 text-sm uppercase"
+            className="h-10 gap-2 text-md uppercase"
             onClick={() => refetch()}
             disabled={isFetching}
           >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-10 h-10 ${isFetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           <Button
             size="lg"
-            className="h-8 gap-2 text-sm uppercase"
+            className="h-10 gap-2 text-md uppercase"
             onClick={() => setShowForm(true)}
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-10 h-10" />
             New Pipeline
           </Button>
         </div>
@@ -201,7 +201,7 @@ export default function FlowPage() {
           { label: "DRAFT",   value: counts.draft,   color: "text-muted-foreground" },
         ].map(stat => (
           <div key={stat.label} className="bg-card border border-border rounded-md px-3 py-2.5 flex flex-col items-center">
-            <div className="text-[16px] tracking-widest text-muted-foreground">{stat.label}</div>
+            <div className="text-[18px] tracking-widest text-muted-foreground">{stat.label}</div>
             <div className={`text-4xl font-bold font-mono mt-3 ${stat.color}`}>{stat.value}</div>
           </div>
         ))}
@@ -210,12 +210,12 @@ export default function FlowPage() {
       {/* Templates */}
       <div className="space-y-2">
         <button
-          className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-[18px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => setShowTemplates(v => !v)}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <Sparkles className="w-6 h-6 text-amber-400" />
           Pipeline Templates
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showTemplates ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-6 h-6 transition-transform ${showTemplates ? "rotate-180" : ""}`} />
         </button>
         {showTemplates && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -228,14 +228,14 @@ export default function FlowPage() {
               >
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{tpl.icon}</span>
-                  <span className={`text-sm font-semibold ${tpl.accentClass}`}>{tpl.name}</span>
+                  <span className={`text-lg uppercase font-semibold ${tpl.accentClass}`}>{tpl.name}</span>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{tpl.description}</p>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60">
-                  <Layers className="w-3 h-3" />
-                  <span>{tpl.nodeCount} nodes</span>
+                <p className="text-,d text-muted-foreground leading-relaxed">{tpl.description}</p>
+                <div className="flex items-center gap-2 text-[16px] text-muted-foreground/60">
+                  <Layers className="w-4 h-4" />
+                  <span className='text-[16px]'>{tpl.nodeCount} nodes</span>
                   <span>·</span>
-                  <span>{tpl.triggerHint}</span>
+                  <span className='text-[16px]'>{tpl.triggerHint}</span>
                 </div>
               </button>
             ))}

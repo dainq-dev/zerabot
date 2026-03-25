@@ -14,7 +14,7 @@ export interface AgentSubagents {
 }
 
 export interface AgentTools {
-  profile: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging"
+  profile: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging" | "research" | "crawl"
   allow: string[]
   deny: string[]
   mcpServers: string[]
@@ -28,7 +28,7 @@ export interface Agent {
   soul?: string
   mission?: string
   instructions?: string
-  toolsProfile: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging"
+  toolsProfile: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging" | "research" | "crawl"
   toolsAllow: string[]
   toolsDeny: string[]
   allowAgents: string[]
@@ -54,7 +54,7 @@ export interface AgentCreateInput {
   soul?: string
   mission?: string
   instructions?: string
-  toolsProfile?: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging"
+  toolsProfile?: "minimal" | "standard" | "full" | "custom" | "coding" | "messaging" | "research" | "crawl"
   toolsAllow?: string[]
   toolsDeny?: string[]
   allowAgents?: string[]

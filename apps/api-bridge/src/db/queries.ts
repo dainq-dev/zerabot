@@ -432,3 +432,181 @@ export function upsertPipeline(p: Pipeline): void {
 export function deletePipeline(id: string): void {
   db.query("DELETE FROM pipelines WHERE id = ?").run(id)
 }
+
+export function getPipelineById(id: string): Pipeline | null {
+  const rows = db.query("SELECT * FROM pipelines WHERE id = ?").all(id) as Record<string, unknown>[]
+  if (!rows.length) return null
+  const r = rows[0]!
+  return {
+    id: r.id as string,
+    name: r.name as string,
+    description: r.description as string | undefined,
+    nodes: JSON.parse((r.nodes as string) || "[]"),
+    edges: JSON.parse((r.edges as string) || "[]"),
+    trigger: { type: (r.trigger_type as Pipeline["trigger"]["type"]) ?? "manual", schedule: r.trigger_val as string | undefined },
+    status: (r.status as Pipeline["status"]) ?? "draft",
+    enabled: (r.enabled as number) === 1,
+    lastRunAt: r.last_run_at as number | undefined,
+    runCount: (r.run_count as number) ?? 0,
+    createdAt: r.created_at as number,
+    updatedAt: r.updated_at as number,
+  }
+}
+
+// ── PIPELINE RUNS ─────────────────────────────────────────────────────────────
+
+export interface PipelineRun {
+  id: string
+  pipelineId: string
+  status: "running" | "done" | "error" | "cancelled"
+  triggerType: string
+  startedAt: number
+  finishedAt?: number
+  vars: Record<string, string>
+  nodeResults: Record<string, { status: string; output?: string; error?: string }>
+  error?: string
+}
+
+export function insertPipelineRun(run: PipelineRun): void {
+  db.query(`
+    INSERT INTO pipeline_runs (id, pipeline_id, status, trigger_type, started_at, vars, node_results)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(run.id, run.pipelineId, run.status, run.triggerType, run.startedAt,
+    JSON.stringify(run.vars), JSON.stringify(run.nodeResults))
+}
+
+export function updatePipelineRun(
+  id: string,
+  fields: Partial<Pick<PipelineRun, "status" | "finishedAt" | "vars" | "nodeResults" | "error">>,
+): void {
+  const sets: string[] = []
+  const params: unknown[] = []
+  if (fields.status !== undefined)      { sets.push("status = ?");       params.push(fields.status) }
+  if (fields.finishedAt !== undefined)  { sets.push("finished_at = ?");  params.push(fields.finishedAt) }
+  if (fields.vars !== undefined)        { sets.push("vars = ?");         params.push(JSON.stringify(fields.vars)) }
+  if (fields.nodeResults !== undefined) { sets.push("node_results = ?"); params.push(JSON.stringify(fields.nodeResults)) }
+  if (fields.error !== undefined)       { sets.push("error = ?");        params.push(fields.error) }
+  if (!sets.length) return
+  params.push(id)
+  db.query(`UPDATE pipeline_runs SET ${sets.join(", ")} WHERE id = ?`).run(...params)
+}
+
+export function getPipelineRuns(pipelineId: string, limit = 20): PipelineRun[] {
+  const rows = db.query(
+    "SELECT * FROM pipeline_runs WHERE pipeline_id = ? ORDER BY started_at DESC LIMIT ?"
+  ).all(pipelineId, limit) as Record<string, unknown>[]
+  return rows.map(rowToPipelineRun)
+}
+
+export function getPipelineRunById(id: string): PipelineRun | null {
+  const row = db.query("SELECT * FROM pipeline_runs WHERE id = ?").get(id) as Record<string, unknown> | null
+  return row ? rowToPipelineRun(row) : null
+}
+
+function rowToPipelineRun(r: Record<string, unknown>): PipelineRun {
+  return {
+    id: r.id as string,
+    pipelineId: r.pipeline_id as string,
+    status: r.status as PipelineRun["status"],
+    triggerType: (r.trigger_type as string) ?? "manual",
+    startedAt: r.started_at as number,
+    finishedAt: r.finished_at as number | undefined,
+    vars: JSON.parse((r.vars as string) || "{}"),
+    nodeResults: JSON.parse((r.node_results as string) || "{}"),
+    error: r.error as string | undefined,
+  }
+}
+
+// ── CRAWLED ITEMS ─────────────────────────────────────────────────────────────
+
+export interface CrawledItem {
+  id: string
+  source: string
+  category?: string
+  url?: string
+  title?: string
+  content?: string
+  structuredData?: Record<string, unknown>
+  agentId?: string
+  pipelineRunId?: string
+  crawledAt: number
+  publishedAt?: number
+  tags: string[]
+}
+
+export function insertCrawledItem(item: CrawledItem): void {
+  db.query(`
+    INSERT OR IGNORE INTO crawled_items
+      (id, source, category, url, title, content, structured_data, agent_id, pipeline_run_id, crawled_at, published_at, tags)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    item.id, item.source, item.category ?? null, item.url ?? null,
+    item.title ?? null, item.content ?? null,
+    item.structuredData ? JSON.stringify(item.structuredData) : null,
+    item.agentId ?? null, item.pipelineRunId ?? null,
+    item.crawledAt, item.publishedAt ?? null,
+    JSON.stringify(item.tags),
+  )
+}
+
+export function getCrawledItems(params: {
+  source?: string
+  category?: string
+  from?: number
+  to?: number
+  limit?: number
+  offset?: number
+}): CrawledItem[] {
+  let sql = "SELECT * FROM crawled_items"
+  const conditions: string[] = []
+  const args: unknown[] = []
+
+  if (params.source)   { conditions.push("source = ?");        args.push(params.source) }
+  if (params.category) { conditions.push("category = ?");      args.push(params.category) }
+  if (params.from)     { conditions.push("crawled_at >= ?");   args.push(params.from) }
+  if (params.to)       { conditions.push("crawled_at <= ?");   args.push(params.to) }
+  if (conditions.length) sql += " WHERE " + conditions.join(" AND ")
+  sql += " ORDER BY crawled_at DESC"
+  sql += ` LIMIT ${params.limit ?? 100} OFFSET ${params.offset ?? 0}`
+
+  return (db.query(sql).all(...args) as Record<string, unknown>[]).map(rowToCrawledItem)
+}
+
+export function getCrawledSourceStats(): { source: string; count: number; lastCrawledAt: number }[] {
+  const rows = db.query(`
+    SELECT source, COUNT(*) as count, MAX(crawled_at) as last_crawled_at
+    FROM crawled_items GROUP BY source ORDER BY count DESC
+  `).all() as Record<string, unknown>[]
+  return rows.map(r => ({
+    source: r.source as string,
+    count: r.count as number,
+    lastCrawledAt: r.last_crawled_at as number,
+  }))
+}
+
+export function deleteCrawledItem(id: string): void {
+  db.query("DELETE FROM crawled_items WHERE id = ?").run(id)
+}
+
+export function deleteOldCrawledItems(olderThanMs: number): number {
+  const cutoff = Date.now() - olderThanMs
+  db.query("DELETE FROM crawled_items WHERE crawled_at < ?").run(cutoff)
+  return (db.query("SELECT changes() as n").get() as { n: number }).n
+}
+
+function rowToCrawledItem(r: Record<string, unknown>): CrawledItem {
+  return {
+    id: r.id as string,
+    source: r.source as string,
+    category: r.category as string | undefined,
+    url: r.url as string | undefined,
+    title: r.title as string | undefined,
+    content: r.content as string | undefined,
+    structuredData: r.structured_data ? JSON.parse(r.structured_data as string) : undefined,
+    agentId: r.agent_id as string | undefined,
+    pipelineRunId: r.pipeline_run_id as string | undefined,
+    crawledAt: r.crawled_at as number,
+    publishedAt: r.published_at as number | undefined,
+    tags: JSON.parse((r.tags as string) || "[]"),
+  }
+}

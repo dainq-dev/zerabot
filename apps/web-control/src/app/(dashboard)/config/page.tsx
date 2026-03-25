@@ -244,7 +244,7 @@ function RuntimeTab({
           label="Log Level"
           hint="Verbosity of ZeroClaw logs. Use info for production, debug for troubleshooting."
         >
-          <Select value={logLevel} onValueChange={setLogLevel}>
+          <Select value={logLevel} onValueChange={(v) => { if (v) setLogLevel(v) }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
@@ -361,7 +361,7 @@ function GatewayTab({
           label="Bind Address"
           hint="Choose who can reach the gateway. Loopback = local machine only (recommended). All = all network interfaces."
         >
-          <Select value={bind} onValueChange={setBind}>
+          <Select value={bind} onValueChange={(v) => { if (v) setBind(v) }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
@@ -388,7 +388,7 @@ function GatewayTab({
           label="Auth Mode"
           hint="Token mode requires a Bearer token in every request. None disables authentication (not recommended)."
         >
-          <Select value={authMode} onValueChange={setAuthMode}>
+          <Select value={authMode} onValueChange={(v) => { if (v) setAuthMode(v) }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
@@ -570,7 +570,7 @@ function ProvidersTab({
           label="Default Model"
           hint="The AI model used by agents that don't specify their own model."
         >
-          <Select value={defaultModel} onValueChange={setDefaultModel}>
+          <Select value={defaultModel} onValueChange={(v) => { if (v) setDefaultModel(v) }}>
             <SelectTrigger className="w-full max-w-xs">
               <SelectValue />
             </SelectTrigger>
@@ -588,7 +588,7 @@ function ProvidersTab({
           label="Sandbox Mode"
           hint="Controls which file system operations agents are allowed to perform."
         >
-          <Select value={sandbox} onValueChange={setSandbox}>
+          <Select value={sandbox} onValueChange={(v) => { if (v) setSandbox(v) }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
@@ -961,7 +961,7 @@ function ToolsTab({
           label="Security Mode"
           hint="Allowlist: only listed commands are permitted. Denylist: all commands allowed except listed. Off: no restrictions (dangerous)."
         >
-          <Select value={execSecurity} onValueChange={setExecSecurity}>
+          <Select value={execSecurity} onValueChange={(v) => { if (v) setExecSecurity(v) }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>

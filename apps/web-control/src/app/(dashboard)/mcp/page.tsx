@@ -171,109 +171,109 @@ export default function McpPage() {
             {servers.length} registered — Model Context Protocol registry
           </p>
         </div>
-        <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setShowCreate(true)}>
+        <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setShowCreate(true)} data-testid="btn-new-mcp">
           <Plus className="w-3 h-3" /> Add Server
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div data-testid="mcp-grid" className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {isLoading
           ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40" />)
           : servers.map(server => (
-              <Card key={server.id} className="p-4 bg-card border-border card-hover">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Server className="w-4 h-4 text-primary" />
-                      <span className="font-bold text-sm">{server.name}</span>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{server.id}</div>
+            <Card key={server.id} className="p-4 bg-card border-border card-hover">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-primary" />
+                    <span className="font-bold text-sm">{server.name}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Badge className={cn("text-[9px] font-bold border", TRANSPORT_COLORS[server.transport])}>
-                      {server.transport.toUpperCase()}
-                    </Badge>
-                    <Circle className={cn(
-                      "w-2 h-2 fill-current",
-                      server.status === "connected" ? "text-green-400" :
+                  <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{server.id}</div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Badge className={cn("text-[9px] font-bold border", TRANSPORT_COLORS[server.transport])}>
+                    {server.transport.toUpperCase()}
+                  </Badge>
+                  <Circle className={cn(
+                    "w-2 h-2 fill-current",
+                    server.status === "connected" ? "text-green-400" :
                       server.status === "connecting" ? "text-cyan-400 pulse-dot" :
-                      "text-red-400"
-                    )} />
-                  </div>
+                        "text-red-400"
+                  )} />
                 </div>
+              </div>
 
-                {server.description && (
-                  <p className="text-[11px] text-muted-foreground leading-relaxed mb-2 line-clamp-2">
-                    {server.description}
-                  </p>
-                )}
+              {server.description && (
+                <p className="text-[11px] text-muted-foreground leading-relaxed mb-2 line-clamp-2">
+                  {server.description}
+                </p>
+              )}
 
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-3">
-                  <Cpu className="w-3 h-3" />
-                  {server.command
-                    ? `${server.command} ${(server.args ?? []).join(" ")}`
-                    : server.url ?? server.endpoint ?? "—"
-                  }
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-3">
+                <Cpu className="w-3 h-3" />
+                {server.command
+                  ? `${server.command} ${(server.args ?? []).join(" ")}`
+                  : server.url ?? server.endpoint ?? "—"
+                }
+              </div>
+
+              {server.assignedAgents.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {server.assignedAgents.map(a => (
+                    <Badge key={a} variant="outline" className="text-[9px] px-1.5 py-0">{a}</Badge>
+                  ))}
                 </div>
+              )}
 
-                {server.assignedAgents.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {server.assignedAgents.map(a => (
-                      <Badge key={a} variant="outline" className="text-[9px] px-1.5 py-0">{a}</Badge>
-                    ))}
+              <div className="flex items-center gap-1 mt-2">
+                {(server.toolCount !== undefined || server.tools) && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground flex-1">
+                    <Wrench className="w-3 h-3" />
+                    {server.toolCount ?? server.tools?.length ?? 0} tools
                   </div>
                 )}
+                <div className="flex items-center gap-1 ml-auto">
+                  <Button
+                    variant="ghost" size="sm"
+                    className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 gap-1"
+                    onClick={() => discoverMutation.mutate(server.id)}
+                    disabled={discoverMutation.isPending}
+                    title="Auto-discover tools"
+                  >
+                    <Cpu className="w-2.5 h-2.5" />
+                    {discoverMutation.isPending && discoverMutation.variables === server.id ? "..." : "Discover"}
+                  </Button>
+                  <Button
+                    variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-300"
+                    onClick={() => deleteMutation.mutate(server.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
 
-                <div className="flex items-center gap-1 mt-2">
-                  {(server.toolCount !== undefined || server.tools) && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground flex-1">
-                      <Wrench className="w-3 h-3" />
-                      {server.toolCount ?? server.tools?.length ?? 0} tools
+              {/* Discovered tools list */}
+              {server.tools && server.tools.length > 0 && (
+                <div className="mt-2 border-t border-border/30 pt-2 space-y-1">
+                  {server.tools.slice(0, 4).map(tool => (
+                    <div key={tool.name} className="flex items-start gap-1.5 text-[10px]">
+                      <Wrench className="w-2.5 h-2.5 text-muted-foreground/50 mt-0.5 shrink-0" />
+                      <div>
+                        <span className="font-mono text-cyan-400/80">{tool.name}</span>
+                        {tool.description && (
+                          <span className="text-muted-foreground/50 ml-1 line-clamp-1">{tool.description}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {server.tools.length > 4 && (
+                    <div className="text-[10px] text-muted-foreground/40 pl-4">
+                      +{server.tools.length - 4} more tools
                     </div>
                   )}
-                  <div className="flex items-center gap-1 ml-auto">
-                    <Button
-                      variant="ghost" size="sm"
-                      className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 gap-1"
-                      onClick={() => discoverMutation.mutate(server.id)}
-                      disabled={discoverMutation.isPending}
-                      title="Auto-discover tools"
-                    >
-                      <Cpu className="w-2.5 h-2.5" />
-                      {discoverMutation.isPending && discoverMutation.variables === server.id ? "..." : "Discover"}
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-300"
-                      onClick={() => deleteMutation.mutate(server.id)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
                 </div>
-
-                {/* Discovered tools list */}
-                {server.tools && server.tools.length > 0 && (
-                  <div className="mt-2 border-t border-border/30 pt-2 space-y-1">
-                    {server.tools.slice(0, 4).map(tool => (
-                      <div key={tool.name} className="flex items-start gap-1.5 text-[10px]">
-                        <Wrench className="w-2.5 h-2.5 text-muted-foreground/50 mt-0.5 shrink-0" />
-                        <div>
-                          <span className="font-mono text-cyan-400/80">{tool.name}</span>
-                          {tool.description && (
-                            <span className="text-muted-foreground/50 ml-1 line-clamp-1">{tool.description}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {server.tools.length > 4 && (
-                      <div className="text-[10px] text-muted-foreground/40 pl-4">
-                        +{server.tools.length - 4} more tools
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Card>
-            ))
+              )}
+            </Card>
+          ))
         }
       </div>
 

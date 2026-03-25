@@ -93,3 +93,38 @@ export interface Pipeline {
   lastRunAt?: number
   runCount?: number
 }
+
+export type PipelineRunStatus = "running" | "done" | "error" | "cancelled"
+
+export interface PipelineNodeResult {
+  status: string
+  output?: string
+  error?: string
+}
+
+export interface PipelineRun {
+  id: string
+  pipelineId: string
+  status: PipelineRunStatus
+  triggerType: string
+  startedAt: number
+  finishedAt?: number
+  vars: Record<string, string>
+  nodeResults: Record<string, PipelineNodeResult>
+  error?: string
+}
+
+export interface CrawledItem {
+  id: string
+  source: string
+  category?: string
+  url?: string
+  title?: string
+  content?: string
+  structuredData?: Record<string, unknown>
+  agentId?: string
+  pipelineRunId?: string
+  crawledAt: number
+  publishedAt?: number
+  tags: string[]
+}

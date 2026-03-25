@@ -102,7 +102,7 @@ export default function MonitorPage() {
         </div>
 
         {/* Right panel: charts */}
-        <div className="w-100 flex flex-col gap-4 shrink-0">
+        <div className="w-150 flex flex-col gap-6 shrink-0">
           {/* Token usage chart */}
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center gap-3 mb-2">
@@ -113,7 +113,7 @@ export default function MonitorPage() {
             </div>
             <ReactECharts
               option={chartOption}
-              style={{ height: 200 }}
+              style={{ height: 300 }}
               opts={{ renderer: "canvas" }}
             />
           </div>
@@ -126,7 +126,7 @@ export default function MonitorPage() {
                 LIVE STATS
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {[
                 { label: "Total Events (session)", value: events.length },
                 {
@@ -148,11 +148,11 @@ export default function MonitorPage() {
                 },
               ].map((s) => (
                 <div key={s.label} className="flex justify-between">
-                  <span className="text-muted-foreground text-md uppercase">
+                  <span className="text-muted-foreground text-lg uppercase">
                     {s.label}
                   </span>
                   <span
-                    className={`font-mono font-bold ${s.danger && s.value > 0 ? "text-red-400" : "text-foreground"}`}
+                    className={`font-mono text-xl font-bold ${s.danger && s.value > 0 ? "text-red-400" : "text-foreground"}`}
                   >
                     {s.value}
                   </span>

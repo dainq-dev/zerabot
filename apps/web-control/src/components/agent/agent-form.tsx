@@ -43,7 +43,7 @@ const MODELS = [
   "openai/gpt-4o-mini",
 ]
 
-type ToolProfile = "minimal" | "standard" | "full" | "custom"
+type ToolProfile = "minimal" | "standard" | "research" | "crawl" | "full" | "custom"
 
 const TOOL_PROFILES: {
   id: ToolProfile
@@ -55,72 +55,92 @@ const TOOL_PROFILES: {
   riskColor: string
   riskLabel: string
 }[] = [
-  {
-    id: "minimal",
-    label: "Tối thiểu",
-    desc: "Chỉ công cụ nội bộ cơ bản",
-    pros: ["Khởi động cực nhanh", "Bề mặt tấn công nhỏ nhất", "Tiêu tốn ít tài nguyên"],
-    cons: ["Không truy cập web", "Không đọc/ghi file", "Không thực thi lệnh"],
-    limit: "Phù hợp agent chat-only hoặc xử lý văn bản đơn giản",
-    riskColor: "text-green-400",
-    riskLabel: "An toàn",
-  },
-  {
-    id: "standard",
-    label: "Tiêu chuẩn",
-    desc: "Web search, web fetch, đọc file",
-    pros: ["Đủ dùng cho hầu hết tác vụ", "Cân bằng năng lực & bảo mật", "Tìm kiếm & truy cập web"],
-    cons: ["Có thể truy cập internet", "Đọc file cục bộ"],
-    limit: "Phù hợp agent nghiên cứu, phân tích, báo cáo",
-    riskColor: "text-cyan-400",
-    riskLabel: "Thấp",
-  },
-  {
-    id: "full",
-    label: "Đầy đủ",
-    desc: "Tất cả công cụ, bao gồm thực thi lệnh",
-    pros: ["Năng lực tối đa", "Thực thi shell command", "Ghi/sửa/xóa file"],
-    cons: ["Tiêu tốn nhiều tài nguyên", "Bề mặt tấn công lớn", "Nguy cơ cao nếu bị lạm dụng"],
-    limit: "Chỉ dùng cho agent tin cậy cao, có sandbox bảo vệ",
-    riskColor: "text-amber-400",
-    riskLabel: "Trung bình",
-  },
-  {
-    id: "custom",
-    label: "Tùy chỉnh",
-    desc: "Chọn thủ công từng công cụ",
-    pros: ["Kiểm soát hoàn toàn", "Tối ưu cho use-case cụ thể"],
-    cons: ["Cần cấu hình thủ công", "Dễ bỏ sót công cụ cần thiết"],
-    limit: "Dùng khi biết rõ nhu cầu và muốn giảm thiểu quyền truy cập",
-    riskColor: "text-primary",
-    riskLabel: "Tùy chỉnh",
-  },
-]
+    {
+      id: "minimal",
+      label: "Tối thiểu",
+      desc: "Chỉ công cụ nội bộ cơ bản",
+      pros: ["Khởi động cực nhanh", "Bề mặt tấn công nhỏ nhất", "Tiêu tốn ít tài nguyên"],
+      cons: ["Không truy cập web", "Không đọc/ghi file", "Không thực thi lệnh"],
+      limit: "Phù hợp agent chat-only hoặc xử lý văn bản đơn giản",
+      riskColor: "text-green-400",
+      riskLabel: "An toàn",
+    },
+    {
+      id: "standard",
+      label: "Tiêu chuẩn",
+      desc: "Web search, web fetch, đọc file",
+      pros: ["Đủ dùng cho hầu hết tác vụ", "Cân bằng năng lực & bảo mật", "Tìm kiếm & truy cập web"],
+      cons: ["Có thể truy cập internet", "Đọc file cục bộ"],
+      limit: "Phù hợp agent nghiên cứu nhẹ, phân tích, báo cáo",
+      riskColor: "text-cyan-400",
+      riskLabel: "Thấp",
+    },
+    {
+      id: "research",
+      label: "Research",
+      desc: "Browser + web search + memory + sub-agents",
+      pros: ["Browser Playwright cho trang JS-heavy", "Nhớ context dài hạn (memory)", "Spawn sub-agents", "Exa/Tavily neural search"],
+      cons: ["Tiêu tốn nhiều token hơn", "Không exec lệnh shell"],
+      limit: "Phù hợp agent phân tích chuyên sâu, nghiên cứu thị trường",
+      riskColor: "text-cyan-400",
+      riskLabel: "Thấp",
+    },
+    {
+      id: "crawl",
+      label: "Crawl",
+      desc: "Browser + Firecrawl + exec + GCP automation",
+      pros: ["Firecrawl structured extraction", "Browser cho trang động", "Exec curl/jq cho JSON APIs", "GCP-backed search"],
+      cons: ["Exec shell — cần sandbox", "Yêu cầu FIRECRAWL_API_KEY"],
+      limit: "Phù hợp agent thu thập dữ liệu tự động từ nhiều nguồn",
+      riskColor: "text-amber-400",
+      riskLabel: "Trung bình",
+    },
+    {
+      id: "full",
+      label: "Đầy đủ",
+      desc: "Tất cả công cụ, bao gồm thực thi lệnh",
+      pros: ["Năng lực tối đa", "Thực thi shell command", "Ghi/sửa/xóa file"],
+      cons: ["Tiêu tốn nhiều tài nguyên", "Bề mặt tấn công lớn", "Nguy cơ cao nếu bị lạm dụng"],
+      limit: "Chỉ dùng cho agent tin cậy cao, có sandbox bảo vệ",
+      riskColor: "text-amber-400",
+      riskLabel: "Trung bình",
+    },
+    {
+      id: "custom",
+      label: "Tùy chỉnh",
+      desc: "Chọn thủ công từng công cụ",
+      pros: ["Kiểm soát hoàn toàn", "Tối ưu cho use-case cụ thể"],
+      cons: ["Cần cấu hình thủ công", "Dễ bỏ sót công cụ cần thiết"],
+      limit: "Dùng khi biết rõ nhu cầu và muốn giảm thiểu quyền truy cập",
+      riskColor: "text-primary",
+      riskLabel: "Tùy chỉnh",
+    },
+  ]
 
 const CUSTOM_TOOLS: { id: string; label: string; hint: string; risk: "safe" | "warn" | "danger" }[] = [
-  { id: "web_search", label: "Tìm kiếm web",       hint: "Tìm kiếm qua Google/Brave",        risk: "warn" },
-  { id: "web_fetch",  label: "Lấy nội dung web",    hint: "Đọc nội dung URL bất kỳ",          risk: "warn" },
-  { id: "fs_read",    label: "Đọc file cục bộ",     hint: "Đọc file trong workspace",         risk: "safe" },
-  { id: "fs_write",   label: "Ghi file cục bộ",     hint: "Tạo, sửa, xóa file",              risk: "warn" },
-  { id: "exec",       label: "Thực thi lệnh shell", hint: "Chạy lệnh hệ thống trực tiếp",    risk: "danger" },
-  { id: "sessions",   label: "Quản lý phiên",       hint: "Tạo và quản lý sub-agent session", risk: "safe" },
-  { id: "automation", label: "Tự động hóa",         hint: "Điều khiển trình duyệt, script",  risk: "warn" },
-  { id: "memory",     label: "Bộ nhớ dài hạn",      hint: "Lưu/đọc memory engine nội bộ",    risk: "safe" },
+  { id: "web_search", label: "Tìm kiếm web", hint: "Tìm kiếm qua Google/Brave", risk: "warn" },
+  { id: "web_fetch", label: "Lấy nội dung web", hint: "Đọc nội dung URL bất kỳ", risk: "warn" },
+  { id: "fs_read", label: "Đọc file cục bộ", hint: "Đọc file trong workspace", risk: "safe" },
+  { id: "fs_write", label: "Ghi file cục bộ", hint: "Tạo, sửa, xóa file", risk: "warn" },
+  { id: "exec", label: "Thực thi lệnh shell", hint: "Chạy lệnh hệ thống trực tiếp", risk: "danger" },
+  { id: "sessions", label: "Quản lý phiên", hint: "Tạo và quản lý sub-agent session", risk: "safe" },
+  { id: "automation", label: "Tự động hóa", hint: "Điều khiển trình duyệt, script", risk: "warn" },
+  { id: "memory", label: "Bộ nhớ dài hạn", hint: "Lưu/đọc memory engine nội bộ", risk: "safe" },
 ]
 
 type LimitsPreset = "low" | "normal" | "high" | "custom"
 
 const LIMIT_PRESETS: Record<Exclude<LimitsPreset, "custom">, { ram: number; tokens: number; concurrent: number }> = {
-  low:    { ram: 20,  tokens: 1_000,  concurrent: 1 },
-  normal: { ram: 50,  tokens: 3_000,  concurrent: 2 },
-  high:   { ram: 200, tokens: 15_000, concurrent: 5 },
+  low: { ram: 20, tokens: 1_000, concurrent: 1 },
+  normal: { ram: 50, tokens: 3_000, concurrent: 2 },
+  high: { ram: 200, tokens: 15_000, concurrent: 5 },
 }
 
 const PRESET_META: { id: LimitsPreset; label: string; desc: string; color: string }[] = [
-  { id: "low",    label: "Thấp",        desc: "20 MB · 1 000 tok/h · 1 tác vụ",   color: "text-green-400" },
-  { id: "normal", label: "Bình thường", desc: "50 MB · 3 000 tok/h · 2 tác vụ",   color: "text-cyan-400" },
-  { id: "high",   label: "Cao",         desc: "200 MB · 15 000 tok/h · 5 tác vụ", color: "text-amber-400" },
-  { id: "custom", label: "Tùy chỉnh",   desc: "Nhập giá trị thủ công",             color: "text-primary" },
+  { id: "low", label: "Thấp", desc: "20 MB · 1 000 tok/h · 1 tác vụ", color: "text-green-400" },
+  { id: "normal", label: "Bình thường", desc: "50 MB · 3 000 tok/h · 2 tác vụ", color: "text-cyan-400" },
+  { id: "high", label: "Cao", desc: "200 MB · 15 000 tok/h · 5 tác vụ", color: "text-amber-400" },
+  { id: "custom", label: "Tùy chỉnh", desc: "Nhập giá trị thủ công", color: "text-primary" },
 ]
 
 // ── Field wrapper ─────────────────────────────────────────────────────────────
@@ -151,20 +171,20 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
   const isEdit = !!agent
 
   const [form, setForm] = useState({
-    name:               agent?.name ?? "",
-    emoji:              agent?.emoji ?? "Bot",
-    model:              agent?.model ?? "anthropic/claude-haiku-4-5",
-    soul:               agent?.soul ?? "",
-    mission:            agent?.mission ?? "",
-    instructions:       agent?.instructions ?? "",
-    toolsProfile:       (agent?.toolsProfile ?? "minimal") as ToolProfile,
-    toolsAllow:         (agent?.toolsAllow ?? []) as string[],
-    mcpServers:         (agent?.mcpServers ?? []) as string[],
-    maxRamMb:           agent?.limits?.maxRamMb ?? 50,
-    maxTokensPerHour:   agent?.limits?.maxTokensPerHour ?? 3000,
+    name: agent?.name ?? "",
+    emoji: agent?.emoji ?? "Bot",
+    model: agent?.model ?? "anthropic/claude-haiku-4-5",
+    soul: agent?.soul ?? "",
+    mission: agent?.mission ?? "",
+    instructions: agent?.instructions ?? "",
+    toolsProfile: ((agent?.toolsProfile ?? "minimal") as ToolProfile),
+    toolsAllow: (agent?.toolsAllow ?? []) as string[],
+    mcpServers: (agent?.mcpServers ?? []) as string[],
+    maxRamMb: agent?.limits?.maxRamMb ?? 50,
+    maxTokensPerHour: agent?.limits?.maxTokensPerHour ?? 3000,
     maxConcurrentTasks: agent?.limits?.maxConcurrentTasks ?? 2,
-    limitsPreset:       "normal" as LimitsPreset,
-    enabled:            agent?.enabled ?? true,
+    limitsPreset: "normal" as LimitsPreset,
+    enabled: agent?.enabled ?? true,
   })
 
   const set = <K extends keyof typeof form>(k: K, v: typeof form[K]) =>
@@ -246,10 +266,10 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
           {/* Tab bar */}
           <TabsList className="w-full bg-muted/40 border border-border/60 p-0.5 gap-0.5">
             {[
-              { value: "basic",       label: "Cơ bản" },
+              { value: "basic", label: "Cơ bản" },
               { value: "personality", label: "Cá tính" },
-              { value: "tools",       label: "Công cụ" },
-              { value: "limits",      label: "Giới hạn" },
+              { value: "tools", label: "Công cụ" },
+              { value: "limits", label: "Giới hạn" },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.value}
@@ -265,6 +285,7 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
           <TabsContent value="basic" className="space-y-5 mt-5">
             <Field label="Tên hiển thị">
               <Input
+                data-testid="agent-form-name"
                 value={form.name}
                 onChange={(e) => set("name", e.target.value)}
                 placeholder="Orchestrator"
@@ -277,7 +298,7 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
             </Field>
 
             <Field label="Mô hình AI">
-              <Select value={form.model} onValueChange={(v) => set("model", v)} modal>
+              <Select value={form.model} onValueChange={(v) => { if (v) set("model", v) }} modal>
                 <SelectTrigger className="h-11 text-base font-mono uppercase tracking-wide">
                   <SelectValue />
                 </SelectTrigger>
@@ -394,8 +415,8 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
                   {CUSTOM_TOOLS.map((tool) => {
                     const checked = form.toolsAllow.includes(tool.id)
                     const riskBadge = {
-                      safe:   <span className="text-xs text-green-400 font-mono tracking-wide">AN TOÀN</span>,
-                      warn:   <span className="text-xs text-amber-400 font-mono tracking-wide">CẨN THẬN</span>,
+                      safe: <span className="text-xs text-green-400 font-mono tracking-wide">AN TOÀN</span>,
+                      warn: <span className="text-xs text-amber-400 font-mono tracking-wide">CẨN THẬN</span>,
                       danger: <span className="text-xs text-red-400 font-mono tracking-wide">NGUY HIỂM</span>,
                     }[tool.risk]
                     return (
@@ -520,8 +541,8 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
                 </p>
                 <div className="grid grid-cols-3 gap-6">
                   {[
-                    { label: "RAM tối đa",       value: `${form.maxRamMb} MB` },
-                    { label: "Token / giờ",      value: form.maxTokensPerHour.toLocaleString() },
+                    { label: "RAM tối đa", value: `${form.maxRamMb} MB` },
+                    { label: "Token / giờ", value: form.maxTokensPerHour.toLocaleString() },
                     { label: "Tác vụ đồng thời", value: form.maxConcurrentTasks },
                   ].map(stat => (
                     <div key={stat.label}>
@@ -577,6 +598,7 @@ export function AgentForm({ agent, open, onClose }: AgentFormProps) {
             Hủy
           </Button>
           <Button
+            data-testid="agent-form-submit"
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending}
             className="text-sm uppercase tracking-wider h-10 px-5 gap-2"

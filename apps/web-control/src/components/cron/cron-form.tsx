@@ -163,7 +163,7 @@ export function CronForm({ open, onClose }: Props) {
             <Field label="Agent">
               <Select
                 value={form.agentId}
-                onValueChange={(v) => setForm((f) => ({ ...f, agentId: v }))}
+                onValueChange={(v) => { if (v) setForm((f) => ({ ...f, agentId: v })) }}
               >
                 <SelectTrigger className="min-h-11 text-base w-full ">
                   <SelectValue placeholder="Chọn agent…" />
@@ -216,12 +216,12 @@ export function CronForm({ open, onClose }: Props) {
             <Field label="Kênh thông báo">
               <Select
                 value={form.notifyChannel ?? "__none__"}
-                onValueChange={(v) =>
-                  setForm((f) => ({
+                onValueChange={(v) => {
+                  if (v) setForm((f) => ({
                     ...f,
                     notifyChannel: v === "__none__" ? undefined : v,
                   }))
-                }
+                }}
               >
                 <SelectTrigger className="text-base w-full min-h-11 uppercase">
                   <SelectValue placeholder="Không" />

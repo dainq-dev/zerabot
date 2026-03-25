@@ -213,7 +213,7 @@ export function PipelineForm({ open, onClose, onCreated }: PipelineFormProps) {
           {triggerType === "cron" && (
             <div className="space-y-2.5 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/20">
               <Label className="text-sm font-medium text-cyan-300">Lịch chạy</Label>
-              <Select value={cronPreset} onValueChange={setCronPreset}>
+              <Select value={cronPreset} onValueChange={(v) => { if (v) setCronPreset(v) }}>
                 <SelectTrigger className="w-full bg-background/50">
                   <SelectValue />
                 </SelectTrigger>
@@ -243,7 +243,7 @@ export function PipelineForm({ open, onClose, onCreated }: PipelineFormProps) {
           {triggerType === "channel" && (
             <div className="space-y-2.5 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
               <Label className="text-sm font-medium text-purple-300">Nhận từ kênh nào?</Label>
-              <Select value={channelId} onValueChange={setChannelId}>
+              <Select value={channelId} onValueChange={(v) => { if (v) setChannelId(v) }}>
                 <SelectTrigger className="w-full bg-background/50">
                   <SelectValue />
                 </SelectTrigger>

@@ -142,4 +142,40 @@ CREATE TABLE IF NOT EXISTS task_runs (
   token_used INTEGER DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_task_runs_started ON task_runs(started_at DESC);
+
+-- Pipeline run history
+CREATE TABLE IF NOT EXISTS pipeline_runs (
+  id TEXT PRIMARY KEY,
+  pipeline_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'running',
+  trigger_type TEXT DEFAULT 'manual',
+  started_at INTEGER NOT NULL,
+  finished_at INTEGER,
+  vars TEXT DEFAULT '{}',
+  node_results TEXT DEFAULT '{}',
+  error TEXT,
+  FOREIGN KEY (pipeline_id) REFERENCES pipelines(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_pipeline_runs_pipeline ON pipeline_runs(pipeline_id, started_at DESC);
+
+-- Crawled data items (ingested by agents after crawl tasks)
+CREATE TABLE IF NOT EXISTS crawled_items (
+  id TEXT PRIMARY KEY,
+  source TEXT NOT NULL,
+  category TEXT,
+  url TEXT,
+  title TEXT,
+  content TEXT,
+  structured_data TEXT,
+  agent_id TEXT,
+  pipeline_run_id TEXT,
+  crawled_at INTEGER NOT NULL,
+  published_at INTEGER,
+  tags TEXT DEFAULT '[]',
+  FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_crawled_source_time   ON crawled_items(source, crawled_at DESC);
+CREATE INDEX IF NOT EXISTS idx_crawled_category_time ON crawled_items(category, crawled_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_crawled_url    ON crawled_items(url) WHERE url IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_crawled_pipeline_run  ON crawled_items(pipeline_run_id) WHERE pipeline_run_id IS NOT NULL;
 `

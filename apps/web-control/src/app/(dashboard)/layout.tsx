@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
 
-      {isDev && <DevBar />}
+      {/* {isDev && <DevBar />} */}
     </div>
   )
 }

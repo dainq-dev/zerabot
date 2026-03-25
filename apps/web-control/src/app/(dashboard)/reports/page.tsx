@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import ReactECharts from "echarts-for-react"
 import { Download, TrendingUp, Zap, BarChart3 } from "lucide-react"
 import { estimateCost } from "@zerobot/shared"
+import { AgentIcon } from '@/components/shared/agent-icon'
 
 export default function ReportsPage() {
   const { data: agents = [] } = useQuery({
@@ -57,16 +58,16 @@ export default function ReportsPage() {
     xAxis: {
       type: "category",
       data: chartDays,
-      axisLabel: { color: "oklch(0.55 0.03 200)", fontSize: 10 },
+      axisLabel: { color: "oklch(0.55 0.03 200)", fontSize: 16 },
       axisLine: { lineStyle: { color: "oklch(0.22 0.02 200 / 40%)" } },
     },
     yAxis: {
       type: "value",
-      axisLabel: { color: "oklch(0.55 0.03 200)", fontSize: 10 },
+      axisLabel: { color: "oklch(0.55 0.03 200)", fontSize: 16 },
       splitLine: { lineStyle: { color: "oklch(0.22 0.02 200 / 20%)", type: "dashed" } },
     },
     series: [{
-      type: "line",
+      type: "bar",
       data: chartValues,
       smooth: true,
       lineStyle: { color: "oklch(0.75 0.18 175)", width: 2 },
@@ -79,6 +80,7 @@ export default function ReportsPage() {
           ],
         },
       },
+      barWidth: 200,        
       symbol: "none",
     }],
   }
@@ -87,68 +89,122 @@ export default function ReportsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold tracking-wide">Reports</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Last 7 days performance</p>
+          <h1 className="text-2xl uppercase font-bold tracking-wide">
+            Reports
+          </h1>
+          <p className="text-md uppercase text-muted-foreground mt-0.5">
+            Last 7 days performance
+          </p>
         </div>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
-          <Download className="w-3 h-3" /> Export CSV
+        <Button variant="outline" size="sm" className="h-8 gap-3 text-lg uppercase">
+          <Download className="w-10 h-10" /> Export CSV
         </Button>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "INPUT TOKENS", value: totalInput.toLocaleString(), icon: Zap, color: "text-cyan-400" },
-          { label: "OUTPUT TOKENS", value: totalOutput.toLocaleString(), icon: TrendingUp, color: "text-green-400" },
-          { label: "TOTAL TOKENS", value: (totalInput + totalOutput).toLocaleString(), icon: BarChart3, color: "text-primary" },
-          { label: "EST. COST (7D)", value: `$${totalCost.toFixed(4)}`, icon: BarChart3, color: "text-amber-400" },
-        ].map(s => (
+          {
+            label: "INPUT TOKENS",
+            value: totalInput.toLocaleString(),
+            icon: Zap,
+            color: "text-cyan-400",
+          },
+          {
+            label: "OUTPUT TOKENS",
+            value: totalOutput.toLocaleString(),
+            icon: TrendingUp,
+            color: "text-green-400",
+          },
+          {
+            label: "TOTAL TOKENS",
+            value: (totalInput + totalOutput).toLocaleString(),
+            icon: BarChart3,
+            color: "text-primary",
+          },
+          {
+            label: "EST. COST (7D)",
+            value: `$${totalCost.toFixed(4)}`,
+            icon: BarChart3,
+            color: "text-amber-400",
+          },
+        ].map((s) => (
           <Card key={s.label} className="p-3 bg-card border-border">
-            <div className="text-[9px] tracking-widest text-muted-foreground mb-1">{s.label}</div>
-            <div className={`text-xl font-bold font-mono ${s.color}`}>{s.value}</div>
+            <div className="text-[16px] tracking-widest text-muted-foreground mb-1">
+              {s.label}
+            </div>
+            <div className={`text-2xl font-bold font-mono ${s.color}`}>
+              {s.value}
+            </div>
           </Card>
         ))}
       </div>
 
       {/* Line chart */}
       <Card className="p-4 bg-card border-border">
-        <div className="text-xs font-bold tracking-wide mb-3">TOKENS / DAY (7 DAYS)</div>
-        {isLoading
-          ? <Skeleton className="h-40" />
-          : <ReactECharts option={lineChartOption} style={{ height: 160 }} opts={{ renderer: "canvas" }} />
-        }
+        <div className="text-lg uppercase font-bold tracking-wide mb-3">
+          TOKENS / DAY (7 DAYS)
+        </div>
+        {isLoading ? (
+          <Skeleton className="h-80" />
+        ) : (
+          <ReactECharts
+            option={lineChartOption}
+            style={{ height: 320 }}
+            opts={{ renderer: "canvas" }}
+          />
+        )}
       </Card>
 
       {/* Per-agent table */}
       <Card className="overflow-hidden bg-card border-border">
-        <div className="text-xs font-bold tracking-wide p-4 border-b border-border">AGENT BREAKDOWN</div>
+        <div className="text-lg font-bold tracking-wide p-4 border-b border-border">
+          AGENT BREAKDOWN
+        </div>
         <div className="divide-y divide-border/50">
           {Object.entries(agentTotals).map(([agentId, data]) => {
-            const agent = agents.find(a => a.id === agentId)
-            const cost = estimateCost(data.model, data.input, data.output)
+            const agent = agents.find((a) => a.id === agentId);
+            const cost = estimateCost(data.model, data.input, data.output);
             return (
-              <div key={agentId} className="flex items-center gap-4 px-4 py-2.5 text-xs hover:bg-muted/10">
-                <span className="text-base">{agent?.emoji ?? "🤖"}</span>
+              <div
+                key={agentId}
+                className="flex items-center gap-4 px-4 py-2.5 text-xs hover:bg-muted/10"
+              >
+                <span className="text-xl">
+                  <AgentIcon key={agent?.emoji} className="w-10 h-10" />
+                </span>
                 <div className="flex-1">
-                  <div className="font-bold">{agent?.name ?? agentId}</div>
-                  <div className="text-[10px] text-muted-foreground font-mono">{data.model}</div>
+                  <div className="font-bold text-lg uppercase">
+                    {agent?.name ?? agentId}
+                  </div>
+                  <div className="text-[16px] uppercase text-muted-foreground font-mono">
+                    {data.model}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-cyan-400">{data.input.toLocaleString()} in</div>
-                  <div className="font-mono text-green-400">{data.output.toLocaleString()} out</div>
+                  <div className="font-mono text-lg text-cyan-400">
+                    {data.input.toLocaleString()} in
+                  </div>
+                  <div className="font-mono text-lg text-green-400">
+                    {data.output.toLocaleString()} out
+                  </div>
                 </div>
-                <div className="text-right w-20">
-                  <div className="font-bold text-amber-400">${cost.toFixed(4)}</div>
-                  <div className="text-[10px] text-muted-foreground">est. cost</div>
+                <div className="text-right w-fit min-w-40">
+                  <div className="font-bold text-amber-400 text-lg">
+                    ${cost.toFixed(7)}
+                  </div>
+                  <div className="text-lg text-muted-foreground">est. cost</div>
                 </div>
               </div>
-            )
+            );
           })}
           {Object.keys(agentTotals).length === 0 && (
-            <div className="text-center py-8 text-muted-foreground text-xs">No data yet</div>
+            <div className="text-center py-8 text-muted-foreground text-xs">
+              No data yet
+            </div>
           )}
         </div>
       </Card>
     </div>
-  )
+  );
 }

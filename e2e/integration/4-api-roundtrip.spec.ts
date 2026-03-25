@@ -128,4 +128,35 @@ test.describe('Agent API Round-trip (BDD)', () => {
 
     await api.post('/api/agents/rt-full/stop')
   })
+
+  // ── Feature: Người dùng xóa task run sau khi hoàn thành ──
+
+  test('người dùng dispatch task rồi xóa task run', async () => {
+    // Dispatch 1 task để có runId
+    await api.post('/api/agents/rt-full/start')
+    await waitUntil(
+      async () => {
+        const { agent } = await api.get<{ agent: Agent }>('/api/agents/rt-full')
+        return agent.status === 'running'
+      },
+      15_000,
+    )
+
+    const { runId } = await api.post<{ ok: boolean; runId: string }>('/api/tasks', {
+      targetType: 'agent',
+      targetId: 'rt-full',
+      prompt: 'Task to be deleted',
+    })
+
+    // Xóa task run
+    const del = await api.delete<{ ok: boolean }>(`/api/tasks/${runId}`)
+    expect(del.ok).toBe(true)
+
+    // Task run không còn trong list
+    const { runs } = await api.get<{ runs: Array<{ id: string }> }>('/api/tasks?limit=50')
+    const found = runs.find(r => r.id === runId)
+    expect(found).toBeUndefined()
+
+    await api.post('/api/agents/rt-full/stop')
+  })
 })

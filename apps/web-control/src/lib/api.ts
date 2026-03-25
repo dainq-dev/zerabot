@@ -19,7 +19,7 @@ const patch = <T>(path: string, body: unknown) => request<T>("PATCH", path, body
 const del = <T>(path: string) => request<T>("DELETE", path)
 
 // ── Agents ──────────────────────────────────────────────────────────────────
-import type { Agent, CronJob, CronRun, McpServerConfig, McpTool, Channel, Pipeline } from "@zerobot/shared"
+import type { Agent, CronJob, CronRun, McpServerConfig, McpTool, Channel, Pipeline, PipelineRun, CrawledItem } from "@zerobot/shared"
 
 export interface AgentDevInfo {
   agentId: string
@@ -93,11 +93,85 @@ export const channelsApi = {
 
 // ── Pipelines ─────────────────────────────────────────────────────────────────
 export const pipelinesApi = {
-  list: () => get<{ pipelines: Pipeline[] }>("/api/pipelines").then(r => r.pipelines),
+  list:   () => get<{ pipelines: Pipeline[] }>("/api/pipelines").then(r => r.pipelines),
   create: (data: unknown) => post<{ pipeline: Pipeline }>("/api/pipelines", data).then(r => r.pipeline),
   update: (id: string, data: unknown) => patch<{ pipeline: Pipeline }>(`/api/pipelines/${id}`, data).then(r => r.pipeline),
   delete: (id: string) => del<{ ok: boolean }>(`/api/pipelines/${id}`),
-  run: (id: string) => post<{ ok: boolean }>(`/api/pipelines/${id}/run`),
+  run:    (id: string) => post<{ ok: boolean; runId: string }>(`/api/pipelines/${id}/run`),
+  cancel: (id: string) => post<{ ok: boolean }>(`/api/pipelines/${id}/cancel`),
+  runs:   (id: string, limit = 20) => get<{ runs: PipelineRun[] }>(`/api/pipelines/${id}/runs?limit=${limit}`).then(r => r.runs),
+  getRun: (pipelineId: string, runId: string) => get<{ run: PipelineRun }>(`/api/pipelines/${pipelineId}/runs/${runId}`).then(r => r.run),
+}
+
+// ── Data (crawled items) ───────────────────────────────────────────────────────
+export interface CrawledSourceStat {
+  source: string
+  count: number
+  lastCrawledAt: number
+}
+
+export const dataApi = {
+  ingest: (payload: {
+    source: string
+    category?: string
+    agent_id?: string
+    pipeline_run_id?: string
+    items: Array<{
+      url?: string
+      title?: string
+      content?: string
+      structured_data?: Record<string, unknown>
+      published_at?: number
+      tags?: string[]
+    }>
+  }) => post<{ ok: boolean; inserted: number; skipped: number }>("/api/data/ingest", payload),
+
+  items: (params?: {
+    source?: string
+    category?: string
+    from?: number
+    to?: number
+    limit?: number
+    offset?: number
+  }) => {
+    const qs = new URLSearchParams()
+    if (params?.source)   qs.set("source",   params.source)
+    if (params?.category) qs.set("category", params.category)
+    if (params?.from)     qs.set("from",     String(params.from))
+    if (params?.to)       qs.set("to",       String(params.to))
+    if (params?.limit)    qs.set("limit",    String(params.limit))
+    if (params?.offset)   qs.set("offset",   String(params.offset))
+    return get<{ items: CrawledItem[]; count: number; offset: number }>(`/api/data/items?${qs}`)
+  },
+
+  sources: () => get<{ sources: CrawledSourceStat[] }>("/api/data/sources").then(r => r.sources),
+  delete:  (id: string) => del<{ ok: boolean }>(`/api/data/items/${id}`),
+  exportUrl: (params?: { source?: string; category?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.source)   qs.set("source",   params.source)
+    if (params?.category) qs.set("category", params.category)
+    return `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/api/data/export?${qs}`
+  },
+}
+
+// ── Agent Templates ────────────────────────────────────────────────────────────
+export interface AgentTemplateSummary {
+  id: string
+  name: string
+  emoji: string
+  description: string
+  toolsProfile: Agent["toolsProfile"]
+  model: string
+  tags: string[]
+}
+
+export const agentTemplatesApi = {
+  list: (tag?: string) => {
+    const qs = tag ? `?tag=${encodeURIComponent(tag)}` : ""
+    return get<{ templates: AgentTemplateSummary[] }>(`/api/agent-templates${qs}`).then(r => r.templates)
+  },
+  get:    (id: string) => get<{ template: AgentTemplateSummary }>(`/api/agent-templates/${id}`).then(r => r.template),
+  useTemplate: (id: string) => post<{ agent: Agent }>(`/api/agent-templates/${id}/use`).then(r => r.agent),
 }
 
 // ── Tasks ─────────────────────────────────────────────────────────────────────

@@ -73,6 +73,29 @@ const TOOL_PROFILE_MAP: Record<string, { profile: string; allow: string[]; deny:
     ],
     deny: [],
   },
+  research: {
+    // Read & analyse web — browser + memory + sessions, no exec/fs
+    profile: "full",
+    allow: [
+      "group:web", "browser",
+      "web_search", "web_fetch",
+      "group:memory",   // nhớ context giữa runs
+      "group:sessions", // spawn sub-agents
+    ],
+    deny: ["exec", "group:fs"],
+  },
+  crawl: {
+    // Deep data collection — browser + exec + GCP automation
+    profile: "full",
+    allow: [
+      "group:web", "browser",
+      "web_search", "web_fetch",
+      "exec",              // curl, jq cho JSON APIs
+      "group:automation",  // GCP-backed search pipeline
+      "group:memory",
+    ],
+    deny: [],
+  },
   coding: {
     profile: "coding",
     allow: ["group:fs", "group:runtime", "group:memory", "exec"],

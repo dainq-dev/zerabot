@@ -7,6 +7,8 @@ import { handleChannels } from "./routes/channels"
 import { handleConfig } from "./routes/config"
 import { handlePipelines } from "./routes/pipelines"
 import { handleTasks } from "./routes/tasks"
+import { handleData } from "./routes/data"
+import { handleAgentTemplates } from "./routes/agent-templates"
 import { wsClients } from "./services/ws-hub"
 import { startIngestion } from "./services/openclaw-ingestion"
 import { startCronScheduler } from "./services/cron-scheduler"
@@ -110,6 +112,10 @@ const server = Bun.serve<WsData>({
         response = await handleChannels(req, url)
       } else if (path.startsWith("/api/pipelines")) {
         response = await handlePipelines(req, url)
+      } else if (path.startsWith("/api/data")) {
+        response = await handleData(req, url)
+      } else if (path.startsWith("/api/agent-templates")) {
+        response = handleAgentTemplates(req, url)
       } else if (path.startsWith("/api/tasks")) {
         response = await handleTasks(req, url)
       } else if (path === "/api/debug/exec" && req.method === "POST") {
